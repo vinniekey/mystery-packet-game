@@ -1,0 +1,23 @@
+{
+  "name": "mystery-packet-game",
+  "version": "1.0.0",
+  "description": "Daily mystery monster collection game",
+  "main": "server.js",
+  "engines": {
+    "node": "18.x"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "NODE_ENV=development node server.js"
+  },
+  "keywords": ["game", "collection", "email"],
+  "author": "Vinnie",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "sqlite3": "^5.1.6",
+    "nodemailer": "^6.9.7",
+    "node-cron": "^3.0.2",
+    "dotenv": "^16.3.1"
+  }
+}

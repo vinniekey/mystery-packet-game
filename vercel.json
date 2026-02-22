@@ -1,0 +1,28 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "server.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "public/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "server.js"
+    },
+    {
+      "src": "/.*",
+      "dest": "public/index.html"
+    }
+  ],
+  "env": {
+    "EMAIL_USER": "@email_user",
+    "EMAIL_PASS": "@email_pass",
+    "APP_URL": "@app_url"
+  }
+}

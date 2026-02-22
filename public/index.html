@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mystery Packet — Collect Monsters Daily</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow: hidden;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            top: -200px;
+            right: -200px;
+            pointer-events: none;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 50px;
+            box-shadow: 0 30px 100px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+            animation: slideUp 0.6s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .logo {
+            font-size: 64px;
+            margin-bottom: 15px;
+            display: inline-block;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        h1 {
+            color: #333;
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #333;
+            font-weight: 600;
+            font-size: 15px;
+        }
+        
+        input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #eee;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background: #f9f9f9;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .message {
+            margin-top: 20px;
+            padding: 14px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 14px;
+            display: none;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .message.success {
+            display: block;
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .message.error {
+            display: block;
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .collection {
+            display: none;
+            animation: slideUp 0.4s ease-out;
+        }
+        
+        .collection-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .collection h2 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #eee;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.4s ease;
+        }
+        
+        .progress-text {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        
+        .monsters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .monster {
+            background: #f8f9fa;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid #eee;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .monster:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .monster.collected {
+            background: linear-gradient(135deg, #f0f4ff 0%, #e8ecff 100%);
+            border-color: #667eea;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.15);
+        }
+        
+        .monster.rare {
+            background: linear-gradient(135deg, #fff9e6 0%, #ffefb3 100%);
+            border-color: #ffd700;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.25);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.85; }
+        }
+        
+        .monster-emoji {
+            font-size: 56px;
+            margin-bottom: 8px;
+            display: inline-block;
+            transition: transform 0.3s;
+        }
+        
+        .monster:hover .monster-emoji {
+            transform: scale(1.15) rotate(5deg);
+        }
+        
+        .monster-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+            font-size: 15px;
+        }
+        
+        .monster-count {
+            color: #999;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .monster.uncollected .monster-emoji {
+            filter: grayscale(80%);
+            opacity: 0.5;
+        }
+        
+        .monster.uncollected .monster-name {
+            color: #999;
+        }
+        
+        .completion-status {
+            text-align: center;
+            padding: 25px;
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            border-radius: 16px;
+            color: #155724;
+            font-weight: 600;
+            font-size: 18px;
+            border: 2px solid #28a745;
+            animation: celebrate 0.6s ease-out;
+        }
+        
+        @keyframes celebrate {
+            0% { opacity: 0; transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        
+        .logout-btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #f0f0f0;
+            color: #666;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            width: auto;
+            cursor: pointer;
+            box-shadow: none;
+        }
+        
+        .logout-btn:hover {
+            background: #e0e0e0;
+            transform: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">📦</div>
+            <h1>Mystery Packet</h1>
+            <p class="subtitle">Collect all 6 unique monsters. Receive one mystery creature each day via email.</p>
+        </div>
+        
+        <div id="signupForm">
+            <div class="form-group">
+                <label for="email">Your Email Address</label>
+                <input type="email" id="email" placeholder="you@example.com" required>
+            </div>
+            <button id="signupBtn" onclick="signup()">Start Collecting →</button>
+            <div id="message" class="message"></div>
+        </div>
+        
+        <div id="collectionView" class="collection">
+            <div class="collection-header">
+                <h2>Your Collection</h2>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-text" id="progressText"></div>
+            </div>
+            <div class="monsters-grid" id="monstersGrid"></div>
+            <div id="completionStatus"></div>
+            <center>
+                <button class="logout-btn" onclick="logout()">← Back to Start</button>
+            </center>
+        </div>
+    </div>
+    
+    <script>
+        const MONSTERS = {
+            1: { name: 'Blobby', emoji: '🟦', rarity: 'common', desc: 'A geometric dreamer' },
+            2: { name: 'Spindle', emoji: '🌀', rarity: 'common', desc: 'Ever rotating' },
+            3: { name: 'Gloop', emoji: '🫧', rarity: 'common', desc: 'Bouncy & buoyant' },
+            4: { name: 'Whisper', emoji: '👻', rarity: 'common', desc: 'Soft & spectral' },
+            5: { name: 'Zinger', emoji: '⚡', rarity: 'common', desc: 'Pure energy' },
+            6: { name: 'Arcana', emoji: '✨', rarity: 'ultra-rare', desc: 'The legendary one' }
+        };
+        
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = `message ${type}`;
+        }
+        
+        function logout() {
+            localStorage.removeItem('userId');
+            document.getElementById('signupForm').style.display = 'block';
+            document.getElementById('collectionView').style.display = 'none';
+            document.getElementById('email').value = '';
+            document.getElementById('message').className = 'message';
+        }
+        
+        async function signup() {
+            const email = document.getElementById('email').value.trim();
+            if (!email) {
+                showMessage('Please enter your email', 'error');
+                return;
+            }
+            
+            const btn = document.getElementById('signupBtn');
+            btn.disabled = true;
+            btn.textContent = 'Creating account...';
+            
+            try {
+                const res = await fetch('/api/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                
+                const data = await res.json();
+                if (res.ok) {
+                    localStorage.setItem('userId', data.userId);
+                    showMessage(data.message, 'success');
+                    setTimeout(() => showCollection(data.userId), 500);
+                } else {
+                    showMessage(data.error, 'error');
+                }
+            } catch (err) {
+                showMessage('Error: ' + err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Start Collecting →';
+            }
+        }
+        
+        async function showCollection(userId) {
+            document.getElementById('signupForm').style.display = 'none';
+            document.getElementById('collectionView').style.display = 'block';
+            
+            try {
+                const res = await fetch(`/api/collection/${userId}`);
+                const data = await res.json();
+                
+                const grid = document.getElementById('monstersGrid');
+                grid.innerHTML = '';
+                
+                let collectedCount = 0;
+                for (let id = 1; id <= 6; id++) {
+                    const monster = MONSTERS[id];
+                    const collected = data.collection[id];
+                    const count = collected?.count || 0;
+                    if (count > 0) collectedCount++;
+                    
+                    const div = document.createElement('div');
+                    const isCollected = count > 0;
+                    div.className = 'monster' + (isCollected ? ' collected' : '') + (monster.rarity === 'ultra-rare' ? ' rare' : '');
+                    div.title = monster.desc;
+                    div.innerHTML = `
+                        <div class="monster-emoji">${monster.emoji}</div>
+                        <div class="monster-name">${monster.name}</div>
+                        <div class="monster-count">${isCollected ? `×${count}` : '?'}</div>
+                    `;
+                    grid.appendChild(div);
+                }
+                
+                // Progress bar
+                const progress = (collectedCount / 6) * 100;
+                document.getElementById('progressFill').style.width = progress + '%';
+                document.getElementById('progressText').textContent = `${collectedCount} of 6 monsters collected`;
+                
+                const status = document.getElementById('completionStatus');
+                if (data.completed) {
+                    status.className = 'completion-status';
+                    status.textContent = '🎉 Collection Complete! You caught them all!';
+                } else {
+                    status.innerHTML = '';
+                }
+            } catch (err) {
+                showMessage('Error loading collection: ' + err.message, 'error');
+            }
+        }
+        
+        window.addEventListener('load', () => {
+            const userId = localStorage.getItem('userId');
+            if (userId) {
+                showCollection(userId);
+            }
+        });
+        
+        // Enter to submit
+        document.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && document.getElementById('signupForm').style.display !== 'none') {
+                signup();
+            }
+        });
+    </script>
+</body>
+</html>
